@@ -1,14 +1,12 @@
 package zetrix;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.InputStream;
+import java.io.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -29,15 +27,18 @@ public class Desh extends JFrame {
   public static Box FileBox;
   public static Box AboutBox;
   
-  public static JLabel About = new JLabel("Close the program. Rename your encoded .gif image to \"encim\".");
-  public static JLabel About1 = new JLabel("Then open the Decode.jar file as an archive and drag and drop this image into it.");
-  public static JLabel About2 = new JLabel("Now run the program an enter int values into the \"int\" field!");
-  public static JLabel About3 = new JLabel("The push the \"Decode\" button! And copy the result.");
+    private JButton GChooseB = new JButton("Choose GIF", (new ImageIcon(zetrix.settings.Util.getRes("add.png"))));
+    private JFileChooser GChooser = new JFileChooser();
+  
+  public static JLabel About = new JLabel("Choose the .gif file first.");
+  public static JLabel About1 = new JLabel("Then enter an int values into the \"int\" field!");
+  public static JLabel About2 = new JLabel("Now push the \"Decode\" button! And copy the result");
+  public static JLabel About3 = new JLabel("from the \"Result\" field.");
   public static JLabel About4 = new JLabel("It's a Jshrink-Obfuscator's GIF's Decoder");
-  public static JLabel About5 = new JLabel("(c) Coded by ZeTRiX");
+  public static JLabel About5 = new JLabel("(c) Coded by ZeTRiX (Evgen Yanov)");
   
   public Desh() {
-        setTitle("Jshrink-Obfuscator's GIF's Decoder (Coded by ZeTRiX)");
+        setTitle("GIF's Decoder (Coded by ZeTRiX)");
         setIconImage(zetrix.settings.Util.getRes("ficon.png"));
         setBackground(Color.BLACK);
         this.setBounds(200, 200, 480, 220);
@@ -52,6 +53,11 @@ public class Desh extends JFrame {
                 super.paintComponent(g);
             }
         };
+        
+        FileNameExtensionFilter GCHFF = new FileNameExtensionFilter(
+                "GIF image to decode", "gif");
+        GChooser.setAcceptAllFileFilterUsed(false);
+        GChooser.setFileFilter(GCHFF);
         
         Box box1 = Box.createHorizontalBox();
         IText.setFont(MainFont);
@@ -68,6 +74,7 @@ public class Desh extends JFrame {
         Result.setText("Result Will Appear here. Instruction is in the \"About\" tab!");
         box2.add(Result);
         Box box4 = Box.createHorizontalBox();
+        box4.add(GChooseB);
         box4.add(Box.createHorizontalGlue());
         box4.add(Box.createHorizontalStrut(12));
         box4.add(Go);
@@ -104,6 +111,44 @@ public class Desh extends JFrame {
         
         this.getContentPane().add(Main);
         
+        GChooseB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int returnVal = GChooser.showOpenDialog(GChooseB);
+                if(returnVal == JFileChooser.APPROVE_OPTION) {
+                    File GFile = GChooser.getSelectedFile();
+                    InputStream is = null;
+                    OutputStream os = null;
+                    try {
+                        File GIFF = new File("to_decode.gif");
+                        
+                        is = new FileInputStream(GFile);
+                        os = new FileOutputStream(GIFF);
+                        
+                        byte[] buffer = new byte[1024];
+                        int length;
+                        while ((length = is.read(buffer)) > 0) {
+                            os.write(buffer, 0, length);
+                        }
+                        is.close();
+                        os.close();
+                        System.out.println("File is choosed successfully!");
+                        
+                        JOptionPane.showMessageDialog((Component)
+                                null,
+                                "Image choosed successful. \n Now enter int value and push \"Decode\" button. \n",
+                                "Uploaded - OK",
+                                JOptionPane.OK_OPTION);
+                    } catch (IOException ex){
+                        System.out.println(ex.toString());
+                        JOptionPane.showMessageDialog((Component)
+                                null,
+                                "Image cannot be choosed. \n Error IOException found. \n Try again. \n",
+                                "Warning - Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
         Go.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 final int decodebase = Integer.parseInt(ITextF.getText().toString());
@@ -112,7 +157,7 @@ public class Desh extends JFrame {
         });
   }
   
-    public static final synchronized String Desh(int paramInt) {
+    public static synchronized String Desh(int paramInt) {
         int i = paramInt & 0xFF;
         if (intern[i] != paramInt) {
             intern[i] = paramInt;
@@ -126,7 +171,7 @@ public class Desh extends JFrame {
     
     static {
         try {
-            InputStream localInputStream = new Desh().getClass().getResourceAsStream("/encim.gif");
+            InputStream localInputStream = new FileInputStream("to_decode.gif");
             if (localInputStream != null) {
                 int i = localInputStream.read() << 16 | localInputStream.read() << 8 | localInputStream.read();
                 ByteArr = new byte[i];
